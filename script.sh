@@ -6,14 +6,14 @@ set -e
 cache_dir=$HOME/.cache/name-generator
 
 #APIs
-male_name_url="https://www.randomlists.com/data/names-male.json"
-female_name_url="https://www.randomlists.com/data/names-female.json"
-last_name_url="https://www.randomlists.com/data/names-surnames.json"
+male_names_url="https://www.randomlists.com/data/names-male.json"
+female_names_url="https://www.randomlists.com/data/names-female.json"
+last_names_url="https://www.randomlists.com/data/names-surnames.json"
 
 #jsons
-male_name_path="$cache_dir/male_name.json"
-female_name_path="$cache_dir/female_name.json"
-last_name_path="$cache_dir/last_name.json"
+male_names_path="$cache_dir/male_names"
+female_names_path="$cache_dir/female_names"
+last_names_path="$cache_dir/last_names"
 
 #color codes
 red='\033[0;31m'
@@ -41,13 +41,50 @@ else
 fi
 
 #Caching the names
-if [ -f $male_name_path ] && [ -f $female_name_path ] && [ -f $last_name_path ];then
+if [ -f $male_names_path ] && [ -f $female_names_path ] && [ -f $last_names_path ];then
     echo -e "\n${green}Name cache already exists procedding${reset}"
 else
     echo -e "\n${purple}Caching name lists"
-    curl -o $male_name_path $male_name_url
-    curl -o $female_name_path $female_name_url
-    curl -o $last_name_path $last_name_url
+    curl $male_names_url | jq -r '.data | .[]' > $male_names_path
+    curl $female_names_url | jq -r '.data | .[]' > $female_names_path
+    curl $last_names_url | jq -r '.data | .[]' > $last_names_path
     echo -e "${green}Caching successfull${reset}"
 fi
 
+name_gen() {
+    if [[ $1 -eq 1 ]];then
+        first_name=$(shuf -n 1 $male_names_path)
+    elif [[ $1 -eq 2 ]];then
+        first_name=$(shuf -n 1 $female_names_path)
+    else
+        echo -e "${red}Input valid gender number${reset}"
+        return 0
+    fi
+
+    last_name=$(shuf -n 1 $last_names_path)
+    
+    # clear_previous_line 1
+    echo -en "\e[1A\e[K"
+    echo -en "\e[1A\e[K"
+    echo -e "${yellow}$first_name $last_name${reset}"
+    return 0
+}
+
+# clear_previous_line () {
+#     i=$1
+#     while [[ $i -gt 0 ]];do
+#         echo -en "\e[1A\e[K"
+#         ((i=i-1))
+#     done
+# }
+
+usr_input=1
+while [[ usr_input -ne 0 ]];do
+    echo -e "${blue}Male - 1 ${purple}female - 2 ${red}exit - 0:${reset}"
+    read -r usr_input
+    if [[ usr_input -eq 0 ]];then 
+        exit 0 
+    fi
+    
+    name_gen $usr_input
+done
