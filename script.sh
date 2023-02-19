@@ -77,14 +77,12 @@ name_gen() {
 #         ((i=i-1))
 #     done
 # }
-
-usr_input=1
-while [[ usr_input -ne 0 ]];do
+clear
+while true;do
     echo -e "${blue}Male - 1 ${purple}female - 2 ${red}exit - 0:${reset}"
     read -r usr_input
     if [[ usr_input -eq 0 ]];then 
         exit 0 
     fi
-    
-    name_gen $usr_input
+        name_gen $usr_input
 done
